@@ -243,10 +243,10 @@ Each entry is a cons whose car is the language symbol and cdr is
 a list of functions taking no arguments.  Each of these functions
 should return either nil (if they are not applicable) or a string
 with the signature.  Instead of a function, an Elisp form may be
-used; it's car is then evalled to its cdr.  Also, a string
-literal may be used, and it is then used as either the signature,
-or (if it begins with an exclamation mark) as a shell command to
-obtain one.")
+used; it's then evalled each time the signature is changed into
+it.  (Useful ones include `(shell-command-to-string \"some shell
+command\")' Also, a string literal may be used, and it is then
+used as the signature.")
 
 (defcustom mbork/message-language-recognizers-alist
   '(("the\\|are\\|is\\|there" . en)
