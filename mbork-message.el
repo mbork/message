@@ -52,8 +52,9 @@ probably buggy."
   "Add a newline at the beginning of the message."
   (save-excursion
     (search-forward (concat "\n" mail-header-separator "\n") nil t)
-    (newline)))
+    (insert "\n")))
 
+;;; Counting seqeunces
 
 (defun mbork/message-count-sentences (&optional print-message)
   "Count the sentences in the current message.
