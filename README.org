@@ -1,0 +1,6 @@
+This small library is a set of helper functions to write emails more
+effectively.  Currently it is WiP, but quite a few functions here are
+already useful.  Note: many things are assumed, like that ">" is the
+quotation prefix, or that quite a few strings are in Polish, etc.
+(When the code matures, I'll move such things to my own =init.el=.)
+Any comments welcome.  The code is released under GPL v2 or later.
