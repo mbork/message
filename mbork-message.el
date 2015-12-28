@@ -230,14 +230,7 @@ http://%s.sentenc.es" (alist-get sentences '((2 . "two")
 					     (5 . "five"))))))
 
 (defcustom mbork/message-signature-alist
-  '((pl . ((mbork/message-sentenc-es-signature-pl (mbork/message-count-sentences))
-	   "Marcin Borkowski
-http://octd.wmi.amu.edu.pl/pl/Marcin_Borkowski
-Wydział Matematyki i Informatyki
-Uniwersytet im. Adama Mickiewicza"
-	   "Marcin Borkowski (http://mbork.pl)"
-	   (mbork/message-pick-random-signature mbork/message-signatures-pl)))
-    (en . ()))
+  '()
   "Alist of lists of signature-generating functions.
 Each entry is a cons whose car is the language symbol and cdr is
 a list of functions taking no arguments.  Each of these functions
@@ -266,10 +259,6 @@ work just fine."
 	    (cons (how-many (car lang) (point-min) (point-max))
 		  (cdr lang)))
 	  mbork/message-language-recognizers-alist))
-
-;; (defcustom mbork/message-choose-signature-functions
-;;   '()
-;;   "A list of functions determining the message signature.")
 
 (defun mbork/message-insert-custom-signature (signature)
   "Insert SIGNATURE at the bottom of the message."
