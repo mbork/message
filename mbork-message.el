@@ -29,6 +29,7 @@
 
 (require 'cl-lib)
 
+;;; Quotation-related stuff
 
 (defcustom message-quotation-regex
   "> \\|>$\\|On.*wrote:$"
@@ -111,6 +112,8 @@ resulting number if PRINT-MESSAGE is non-nil."
       (setq before-attachments (point)))
     (goto-char before-attachments)
     (re-search-backward message-signature-separator nil t)))
+
+;;; Signatures
 
 (defun mbork/message-signature-delete (&optional force)
   "Delete the signature of the email."
@@ -230,6 +233,8 @@ only two sentences because I value your time.  See
 http://two.sentenc.es/ for more info.")
     (t "")))
 
+;;; Blank lines etc.
+
 (defun mbork/message-blank-line-p (include-quotations)
   "Return non-nil if the current line is blank.
 More precisely, an empty string is returned if the line is blank,
@@ -286,6 +291,8 @@ leave the first shortest one."
 	(while (not (mbork/message-blank-line-p t))
 	  (forward-line))
 	(mbork/message-compress-blank-lines-here)))))
+
+;;; Salutations and closings
 
 (defcustom mbork/message-salutations
   '("Czołem"
