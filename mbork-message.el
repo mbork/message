@@ -54,7 +54,6 @@ probably buggy."
     (search-forward (concat "\n" mail-header-separator "\n") nil t)
     (newline)))
 
-(add-hook 'mu4e-compose-mode-hook #'mbork/message-add-newline)
 
 (defun mbork/message-count-sentences (&optional print-message)
   "Count the sentences in the current message.
