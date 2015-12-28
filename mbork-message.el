@@ -139,7 +139,7 @@ resulting number if PRINT-MESSAGE is non-nil."
     (goto-char before-attachments)
     (re-search-backward message-signature-separator nil t)))
 
-(defun message-signature-delete (&optional force)
+(defun mbork/message-signature-delete (&optional force)
   "Delete the signature of the email."
   (interactive)
   (save-excursion
@@ -163,7 +163,7 @@ resulting number if PRINT-MESSAGE is non-nil."
   "A function for avising `message-insert-signature'."
   (save-excursion
     (save-restriction
-      (message-signature-delete)
+      (mbork/message-signature-delete)
       (goto-char (point-max))
       (when (and (search-backward "<#part " nil t)
 		 (eq (get-text-property (point) 'face) 'message-mml))
