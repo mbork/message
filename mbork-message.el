@@ -154,11 +154,6 @@ resulting number if PRINT-MESSAGE is non-nil."
 	   (setq pos (next-single-property-change pos 'face)))
 	 (or pos (point-max)))))))
 
-;; (defun mbork/message-insert-signature (&optional signature)
-;;   "Delete the signature (if one is present) and insert a new one.
-;; Unlike the `message-insert-signature', accept either a numerical
-;; argument (the number of the signature")
-
 (defun mbork/message-insert-signature-advice (fun &rest r)
   "A function for avising `message-insert-signature'."
   (save-excursion
@@ -173,18 +168,6 @@ resulting number if PRINT-MESSAGE is non-nil."
 (advice-add 'message-insert-signature :around 'mbork/message-insert-signature-advice)
 
 (setq message-signature-insert-empty-line t)
-
-;; There are three kinds of signatures:
-;; - official/default ones (language dependent)
-;; - non-default, selectable ones (possibly taken from shell scripts/elisp functions)
-;; - sentenc.es ones (for short emails without salutation/closing)
-;;
-;; proposal:
-;; - default - sentenc.es one, cancelled by salutation/closing
-;; - second in line - official, langauge-dependent
-;; - third and remaining in line - optional ones
-;;
-;; Each signature should have properties (at least language)
 
 (defcustom mbork/message-language-list
   '(pl en)
