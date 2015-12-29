@@ -49,12 +49,6 @@ probably buggy."
     (beginning-of-line)
     (looking-at-p message-quotation-regex)))
 
-(defun mbork/message-add-newline ()
-  "Add a newline at the beginning of the message."
-  (save-excursion
-    (search-forward (concat "\n" mail-header-separator "\n") nil t)
-    (insert "\n")))
-
 ;;; Counting sentences
 
 (defun mbork/message-count-sentences (&optional print-message)
@@ -102,18 +96,12 @@ resulting number if PRINT-MESSAGE is non-nil."
 	     (if (= 1 sentences) "" "s"))
 	  sentences)))))
 
-(defun mbork/message-goto-end-body ()
-  "Go to end of message body (before signature and attachments)."
-  (let (before-attachments)
-    (setq before-attachments (goto-char (point-max)))
-    (while (and (search-backward "<#part " nil t)
-		(eq (get-text-property (point) 'face)
-		    'message-mml))
-      (setq before-attachments (point)))
-    (goto-char before-attachments)
-    (re-search-backward message-signature-separator nil t)))
-
 ;;; Signatures
+
+(defun mbork/message-insert-custom-signature (signature)
+  "Insert SIGNATURE at the bottom of the message."
+  (let ((message-signature signature))
+    (message-insert-signature)))
 
 (defun mbork/message-signature-delete (&optional force)
   "Delete the signature of the email."
@@ -145,6 +133,17 @@ resulting number if PRINT-MESSAGE is non-nil."
 
 (setq message-signature-insert-empty-line t)
 
+(defcustom mbork/message-signature-alist
+  '()
+  "Alist of lists of signature-generating functions.
+Each entry is a cons whose car is the language symbol and cdr is
+a list of functions taking no arguments.  Each of these functions
+should return either nil (if they are not applicable) or a string
+with the signature.  Instead of a function, an Elisp form may be
+used; it's then evalled each time the signature is changed into
+it.  (Useful ones include `(shell-command-to-string \"some shell
+command\")' Also, a string literal may be used, and it is then
+used as the signature.")
 
 ;;; Languages
 
@@ -191,18 +190,6 @@ http://%s.sentenc.es" (alist-get sentences '((2 . "two")
 					     (4 . "four")
 					     (5 . "five"))))))
 
-(defcustom mbork/message-signature-alist
-  '()
-  "Alist of lists of signature-generating functions.
-Each entry is a cons whose car is the language symbol and cdr is
-a list of functions taking no arguments.  Each of these functions
-should return either nil (if they are not applicable) or a string
-with the signature.  Instead of a function, an Elisp form may be
-used; it's then evalled each time the signature is changed into
-it.  (Useful ones include `(shell-command-to-string \"some shell
-command\")' Also, a string literal may be used, and it is then
-used as the signature.")
-
 (defcustom mbork/message-language-recognizers-alist
   '(("the\\|are\\|is\\|there" . en)
     ("[ąćęłńóśźż]" . pl))
@@ -221,11 +208,6 @@ work just fine."
 	    (cons (how-many (car lang) (point-min) (point-max))
 		  (cdr lang)))
 	  mbork/message-language-recognizers-alist))
-
-(defun mbork/message-insert-custom-signature (signature)
-  "Insert SIGNATURE at the bottom of the message."
-  (let ((message-signature signature))
-    (message-insert-signature)))
 
 (defun mbork/message-sentences-count-signature ()
   "Return a signature containing a sentence count."
@@ -295,6 +277,51 @@ leave the first shortest one."
 	  (forward-line))
 	(mbork/message-compress-blank-lines-here)))))
 
+(defun mbork/message-open-line ()
+  "If point is on a blank line (possibly with quotation signs),
+run `mbork/message-compress-blank-lines-here', delete the
+quotation signs and insert an empty line above and below point."
+  (interactive)
+  (when (mbork/message-blank-line-p t)
+    (mbork/message-compress-blank-lines-here)
+    (forward-line -1)
+    (insert ?\n)
+    (delete-region
+     (point)
+     (line-end-position))
+    (forward-line -1)
+    (insert ?\n)))
+
+(defun mbork/message-add-newline-at-the-beginning ()
+  "Add a newline at the beginning of the message."
+  (save-excursion
+    (search-forward (concat "\n" mail-header-separator "\n") nil t)
+    (insert "\n")))
+
+(defun mbork/message-next-paragraph (count)
+  "Move COUNT message paragraphs forward.
+Here, a message paragraph is a stretch of blank lines (in the
+sense of `mbork/message-blank-line-p')."
+  (interactive "p")
+  (if (zerop count)
+      (mbork/message-back-up-blank-lines)
+    (let ((dir (signum count))
+	  (check (if (> count 0) #'eobp #'bobp)))
+      (dotimes (_ (abs count))
+	(while (and (mbork/message-blank-line-p t)
+		    (not (funcall check)))
+	  (forward-line dir))
+	(while (not (or (mbork/message-blank-line-p t)
+			(funcall check)))
+	  (forward-line dir))))))
+
+(defun mbork/message-previous-paragraph (count)
+  "Move COUNT message paragraphs backward.
+Here, a message paragraph is a stretch of blank lines (in the
+sense of `mbork/message-blank-line-p')."
+  (interactive "p")
+  (mbork/message-next-paragraph (- count)))
+
 ;;; Salutations and closings
 
 (defcustom mbork/message-salutations
@@ -353,6 +380,17 @@ end).")
 It is much simpler and does not touch the mark ring."
   (goto-char (point-min))
   (search-forward (concat "\n" mail-header-separator "\n") nil t))
+
+(defun mbork/message-goto-end-body ()
+  "Go to end of message body (before signature and attachments)."
+  (let (before-attachments)
+    (setq before-attachments (goto-char (point-max)))
+    (while (and (search-backward "<#part " nil t)
+		(eq (get-text-property (point) 'face)
+		    'message-mml))
+      (setq before-attachments (point)))
+    (goto-char before-attachments)
+    (re-search-backward message-signature-separator nil t)))
 
 (defun mbork/message-narrow-to-body ()
   "Narrow to message body and leave point at its beginning."
@@ -442,44 +480,6 @@ newly-inserted closing."
       (mbork/message-compress-blank-lines-here)
       (insert closing "\n\n"))))
 
-(defun mbork/message-open-line ()
-  "If point is on a blank line (possibly with quotation signs),
-run `mbork/message-compress-blank-lines-here', delete the
-quotation signs and insert an empty line above and below point."
-  (interactive)
-  (when (mbork/message-blank-line-p t)
-    (mbork/message-compress-blank-lines-here)
-    (forward-line -1)
-    (insert ?\n)
-    (delete-region
-     (point)
-     (line-end-position))
-    (forward-line -1)
-    (insert ?\n)))
-
-(defun mbork/message-next-paragraph (count)
-  "Move COUNT message paragraphs forward.
-Here, a message paragraph is a stretch of blank lines (in the
-sense of `mbork/message-blank-line-p')."
-  (interactive "p")
-  (if (zerop count)
-      (mbork/message-back-up-blank-lines)
-    (let ((dir (signum count))
-	  (check (if (> count 0) #'eobp #'bobp)))
-      (dotimes (_ (abs count))
-	(while (and (mbork/message-blank-line-p t)
-		    (not (funcall check)))
-	  (forward-line dir))
-	(while (not (or (mbork/message-blank-line-p t)
-			(funcall check)))
-	  (forward-line dir))))))
-
-(defun mbork/message-previous-paragraph (count)
-  "Move COUNT message paragraphs backward.
-Here, a message paragraph is a stretch of blank lines (in the
-sense of `mbork/message-blank-line-p')."
-  (interactive "p")
-  (mbork/message-next-paragraph (- count)))
 ;;; That's all, folks
 
 (provide 'mbork-message)
