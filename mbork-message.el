@@ -55,7 +55,7 @@ probably buggy."
     (search-forward (concat "\n" mail-header-separator "\n") nil t)
     (insert "\n")))
 
-;;; Counting seqeunces
+;;; Counting sentences
 
 (defun mbork/message-count-sentences (&optional print-message)
   "Count the sentences in the current message.
@@ -145,6 +145,9 @@ resulting number if PRINT-MESSAGE is non-nil."
 
 (setq message-signature-insert-empty-line t)
 
+
+;;; Languages
+
 (defcustom mbork/message-language-list
   '(pl en)
   "A list of possible langauges of the message.")
@@ -165,7 +168,7 @@ If called with numeric argument N, select Nth language from the
 				   mbork/message-language-list
 				   nil t)))))
 
-;; TODO: code duplication!
+;; TODO: remove code duplication!
 (defun mbork/message-sentenc-es-signature-pl (sentences)
   "Return a signature (in Polish) with a sentence count, but only
 if there are no more than five sentences in the message."
@@ -233,7 +236,7 @@ only two sentences because I value your time.  See
 http://two.sentenc.es/ for more info.")
     (t "")))
 
-;;; Blank lines etc.
+;;; Blank lines
 
 (defun mbork/message-blank-line-p (include-quotations)
   "Return non-nil if the current line is blank.
@@ -477,6 +480,7 @@ Here, a message paragraph is a stretch of blank lines (in the
 sense of `mbork/message-blank-line-p')."
   (interactive "p")
   (mbork/message-next-paragraph (- count)))
+;;; That's all, folks
 
 (provide 'mbork-message)
 
