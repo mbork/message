@@ -209,15 +209,6 @@ work just fine."
 		  (cdr lang)))
 	  mbork/message-language-recognizers-alist))
 
-(defun mbork/message-sentences-count-signature ()
-  "Return a signature containing a sentence count."
-  (cl-case (message-count-sentences)
-    (2 "Marcin Borkowski
-This message contains no greetings etc. and consists of
-only two sentences because I value your time.  See
-http://two.sentenc.es/ for more info.")
-    (t "")))
-
 ;;; Blank lines
 
 (defun mbork/message-blank-line-p (include-quotations)
