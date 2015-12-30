@@ -29,6 +29,7 @@
 
 (require 'cl-lib)
 
+
 ;;; Quotation-related stuff
 
 (defcustom message-quotation-regex
@@ -49,6 +50,7 @@ probably buggy."
     (beginning-of-line)
     (looking-at-p message-quotation-regex)))
 
+
 ;;; Counting sentences
 
 (defun mbork/message-count-sentences (&optional print-message)
@@ -96,6 +98,7 @@ resulting number if PRINT-MESSAGE is non-nil."
 	     (if (= 1 sentences) "" "s"))
 	  sentences)))))
 
+
 ;;; Signatures
 
 (defun mbork/message-insert-custom-signature (signature)
@@ -209,6 +212,7 @@ work just fine."
 		  (cdr lang)))
 	  mbork/message-language-recognizers-alist))
 
+
 ;;; Blank lines
 
 (defun mbork/message-blank-line-p (include-quotations)
@@ -313,6 +317,7 @@ sense of `mbork/message-blank-line-p')."
   (interactive "p")
   (mbork/message-next-paragraph (- count)))
 
+
 ;;; Salutations and closings
 
 (defcustom mbork/message-salutations
@@ -471,6 +476,7 @@ newly-inserted closing."
       (mbork/message-compress-blank-lines-here)
       (insert closing "\n\n"))))
 
+
 ;;; That's all, folks
 
 (provide 'mbork-message)
