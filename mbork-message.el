@@ -193,25 +193,6 @@ http://%s.sentenc.es" (alist-get sentences '((2 . "two")
 					     (4 . "four")
 					     (5 . "five"))))))
 
-(defcustom mbork/message-language-recognizers-alist
-  '(("the\\|are\\|is\\|there" . en)
-    ("[ąćęłńóśźż]" . pl))
-  "Alist of pairs of regexen and languages.
-Used by `mbork/buffer-determine-language': the language of the
-message is determined as the one whose regex had most hits.")
-
-(defun mbork/buffer-determine-language ()
-  "Determine the language of the buffer and return as a symbol.
-Currently only `pl' and `en' are supported.  The determination is
-a very crude, regex-based one, but for two langauges it seems to
-work just fine."
-  ;; When I have time, I'll probably change this to letter/n-gram
-  ;; frequency approach.
-  (mapcar (lambda (lang)
-	    (cons (how-many (car lang) (point-min) (point-max))
-		  (cdr lang)))
-	  mbork/message-language-recognizers-alist))
-
 
 ;;; Blank lines
 
