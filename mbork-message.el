@@ -106,6 +106,17 @@ resulting number if PRINT-MESSAGE is non-nil."
   (let ((message-signature signature))
     (message-insert-signature)))
 
+(defun mbork/message-insert-signature ()
+  "Insert a signature below the message.
+If there is one already, delete it first.  Don't move point."
+  (interactive)
+  (let ((signature (completing-read
+		    "Signature: "
+		    mbork/message-signatures
+		    nil nil)))
+    (mbork/message-signature-delete)
+    (mbork/message-insert-custom-signature signature)))
+
 (defun mbork/message-signature-delete (&optional force)
   "Delete the signature of the email."
   (interactive)
