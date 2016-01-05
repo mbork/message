@@ -150,39 +150,132 @@ composing a new message."
 
 (setq message-signature-insert-empty-line t)
 
-(defcustom mbork/message-signature-alist
+(defcustom mbork/message-signatures
   '()
-  "Alist of lists of signature-generating functions.
-Each entry is a cons whose car is the language symbol and cdr is
-a list of functions taking no arguments.  Each of these functions
-should return either nil (if they are not applicable) or a string
-with the signature.  Instead of a function, an Elisp form may be
-used; it's then evalled each time the signature is changed into
-it.  (Useful ones include `(shell-command-to-string \"some shell
-command\")' Also, a string literal may be used, and it is then
-used as the signature.")
+  "List of signature-generating functions.
+Each entry is either a string (the signature) or an Elisp form
+which returns the signature upon `eval'uation.  (A useful value
+is `(shell-command-to-string \"some shell command\")'.)  For
+simplicity, if this form consists of the name of a parameterless
+function, the parens may be omitted.  If a form (or function)
+returns nil, this entry is considered nonexistent.")
 
-;;; Languages
+(defvar-local mbork/message-signature-number -1
+  "The number of the current signature (counted from zero).")
+(put 'mbork/message-signature-number 'permanent-local t)
 
-(defcustom mbork/message-language-list
-  '(pl en)
-  "A list of possible langauges of the message.")
-
-(defvar mbork/message-language (car mbork/message-language-list)
-  "The symbol of the language of the current message.")
-(make-variable-buffer-local 'mbork/message-language)
-
-(defun mbork/message-select-language (&optional number)
-  "Select the language for the message.
-If called with numeric argument N, select Nth language from the
-`mbork/message-languages' list (counting from zero)."
+(defun mbork/message-signature-cycle (&optional number)
+  "Return the next signature from the list, or the NUMBERth one
+if NUMBER is non-nil."
   (interactive "P")
-  (setq mbork/message-language
-	(if (numberp number)
-	    (nth number mbork/message-language-list)
-	  (intern (completing-read "Language for this buffer: "
-				   mbork/message-language-list
-				   nil t)))))
+  (if (numberp number)
+      (setq message-signature-number number)
+    (cl-incf message-signature-number)
+    (if (>= message-signature-number (length mbork/message-signatures))
+	(setq message-signature-number 0))))
+
+
+;;; Identities
+
+(defcustom mbork/message-identity-list
+  '((pl-formal
+     (salutations . ("Szanowny Panie Profesorze"
+		     "Szanowna Pani Profesor"
+		     "Szanowny Panie Doktorze"
+		     "Szanowna Pani Doktor"
+		     "Szanowny Kolego"
+		     "Szanowna Koleżanko"
+		     "Szanowni Koledzy"
+		     "Szanowny Panie"
+		     "Szanowna Pani"
+		     "Szanowni Państwo"
+		     "Szanowni Panowie"
+		     "Szanowne Panie"
+		     "Dzień dobry"
+		     "Dobry wieczór"))
+     (closings . ("Pozdrawiam"
+		  "Łączę pozdrowienia"
+		  "Pozostaję z szacunkiem"))
+     (signatures . ("Marcin Borkowski
+http://octd.wmi.amu.edu.pl/pl/Marcin_Borkowski
+Wydział Matematyki i Informatyki
+Uniwersytet im. Adama Mickiewicza")))
+    (pl-informal
+     (salutations . ("Czołem"
+		     "Cześć"
+		     "Hej"))
+     (closings . ("Pozdrawiam"
+		  "Na razie"
+		  "Bywaj"))
+     (signatures . ("Marcin Borkowski
+http://mbork.pl")))
+    (en-formal
+     (salutations . ("Dear Sir"
+		     "Dear Madam"
+		     "Dear Sirs"
+		     "Dear Doctor"
+		     "Dear Professor"))
+     (closings . ("Best regards,"
+		  "Yours sincerely,"
+		  "Yours faithfully,"))
+     (signatures . ("Marcin Borkowski
+http://octd.wmi.amu.edu.pl/en/Marcin_Borkowski
+Faculty of Mathematics and Computer Science
+Adam Mickiewicz University")))
+    (en-informal
+     (salutations . ("Hi all"
+		     "Hi there"
+		     "Hi list"
+		     "Hi"))
+     (closings . ("Best,"
+		  "Take care,"
+		  "TIA,"
+		  "HTH,"))
+     (signatures . ("Marcin Borkowski
+http://mbork.pl/en"))))
+  "A list of \"identities\".
+An identity consists of a list of possible salutations, closings
+and signatures.  Examples might be formal and informal messages,
+or messages in different languages.
+
+An identity is represented by a list whose car is the identity's
+symbol and cdr is an alist with the keys `salutations', `closings' and
+`signatures'.")
+
+(defvar mbork/message-identity (car mbork/message-identity-list)
+  "The symbol of the identity of the current message.")
+(make-variable-buffer-local 'mbork/message-identity)
+
+(defun mbork/message-select-identity (&optional number)
+  "Select the identity for the message.
+If called with numeric argument N, select Nth identity from the
+`mbork/message-identity-list' (counting from zero)."
+  (interactive "P")
+  (mbork/message-set-identity
+   (setq mbork/message-identity
+	 (if (numberp number)
+	     (nth number mbork/message-identity-list)
+	   (intern (completing-read "Identity for this message: "
+				    mbork/message-identity-list
+				    nil t))))))
+
+(defun mbork/message-set-identity (identity)
+  "Set `mbork/message-signatures', `mbork/message-salutations'
+and `mbork/message-closings' according to IDENTITY."
+  (setq mbork/message-signatures (alist-get 'signatures
+						 (alist-get identity mbork/message-identity-list)))
+  (setq mbork/message-salutations (alist-get 'salutations
+						 (alist-get identity mbork/message-identity-list)))
+  (setq mbork/message-closings (alist-get 'closings (alist-get
+							  identity mbork/message-identity-list))))
+
+(defun mbork/message-prepare-message ()
+  "Ask the user for the salutation, closing and signature, and prepare
+the message for writing the contents."
+  (interactive)
+  (mbork/message-insert-salutation t)
+  (mbork/message-insert-closing)
+  (mbork/message-insert-signature-advice))
 
 ;; TODO: remove code duplication!
 (defun mbork/message-sentenc-es-signature-pl (sentences)
@@ -315,53 +408,20 @@ sense of `mbork/message-blank-line-p')."
 
 ;;; Salutations and closings
 
-(defcustom mbork/message-salutations
-  '("Czołem"
-    "Cześć"
-    "Hej"
-    "Szanowny Panie Profesorze"
-    "Szanowna Pani Profesor"
-    "Szanowny Panie Doktorze"
-    "Szanowna Pani Doktor"
-    "Szanowny Kolego"
-    "Szanowna Koleżanko"
-    "Szanowni Koledzy"
-    "Szanowny Panie"
-    "Szanowna Pani"
-    "Szanowni Państwo"
-    "Szanowni Panowie"
-    "Szanowne Panie"
-    "Dzień dobry"
-    "Dobry wieczór"
-    "Hi all"
-    "Hi there"
-    "Hi list"
-    "Hi"
-    "Dear Sir"
-    "Dear Madam"
-    "Dear Sirs"
-    "Dear Doctor"
-    "Dear Professor")
+(defvar mbork/message-salutations
+  '()
   "A list of standard salutations for the beginning of the email,
 sans punctuation (a comma will be added automatically at the
-end).")
+end).  Initially empty, this will be populated by the
+identity-setting functions.")
 
 (defvar mbork/message-salutation-history nil
   "History of message salutations.")
 
 (defcustom mbork/message-closings
-  '("Pozdrawiam"
-    "Łączę pozdrowienia"
-    "Pozostaję z szacunkiem"
-    "Bywaj"
-    "Best,"
-    "Regards,"
-    "Sincerely yours,"
-    "Yours sincerely,"
-    "Take care,"
-    "TIA,"
-    "HTH,")
-  "A list of standard message closings.")
+  '()
+  "A list of standard message closings.  Initially empty (see
+`mbork/message-salutations' for the reason).")
 
 (defvar mbork/message-closing-history
   "History of message closings.")
