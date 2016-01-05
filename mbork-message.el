@@ -118,19 +118,23 @@ If there is one already, delete it first.  Don't move point."
     (mbork/message-insert-custom-signature signature)))
 
 (defun mbork/message-signature-delete (&optional force)
-  "Delete the signature of the email."
+  "Delete the signature of the email if present.
+If no signature was found, insert a newline.  This is a really
+nasty hack so that a signature gets a newline before itself when
+composing a new message."
   (interactive)
   (save-excursion
     (goto-char (point-min))
-    (when (re-search-forward message-signature-separator nil t)
-      (delete-region
-       (1- (match-beginning 0))
-       (let ((pos (point)))
-	 (while (and pos
-		     (not (eq (get-text-property pos 'face)
-			      'message-mml)))
-	   (setq pos (next-single-property-change pos 'face)))
-	 (or pos (point-max)))))))
+    (if (re-search-forward message-signature-separator nil t)
+	(delete-region
+	 (1- (match-beginning 0))
+	 (progn
+	   (goto-char (point-max))
+	   (while (search-backward "<#part " nil t))
+	   (point)))
+      (goto-char (point-max))
+      (while (search-backward "<#part " nil t))
+      (insert "\n"))))
 
 (defun mbork/message-insert-signature-advice (fun &rest r)
   "A function for avising `message-insert-signature'."
