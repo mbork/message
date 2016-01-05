@@ -137,13 +137,12 @@ composing a new message."
       (insert "\n"))))
 
 (defun mbork/message-insert-signature-advice (fun &rest r)
-  "A function for avising `message-insert-signature'."
+  "A function for advising `message-insert-signature'."
   (save-excursion
     (save-restriction
       (mbork/message-signature-delete)
       (goto-char (point-max))
-      (when (and (search-backward "<#part " nil t)
-		 (eq (get-text-property (point) 'face) 'message-mml))
+      (when (search-backward "<#part " nil t)
 	(narrow-to-region (point-min) (point)))
       (apply fun r))))
 
@@ -377,9 +376,7 @@ It is much simpler and does not touch the mark ring."
   "Go to end of message body (before signature and attachments)."
   (let (before-attachments)
     (setq before-attachments (goto-char (point-max)))
-    (while (and (search-backward "<#part " nil t)
-		(eq (get-text-property (point) 'face)
-		    'message-mml))
+    (while (search-backward "<#part " nil t)
       (setq before-attachments (point)))
     (goto-char before-attachments)
     (re-search-backward message-signature-separator nil t)))
