@@ -155,6 +155,36 @@ composing a new message."
   "List of signatures.")
 
 
+;;; Dynamic signatures
+(defcustom mbork/message-sentenc-es-template
+  "Marcin Borkowski
+
+Q: Why is this message only %s sentences long?
+A: Because our time is valuable.                http://%s.sentenc.es"
+  "A template for a sentenc.es-based signature.")
+
+(defun mbork/message-sentenc-es-signature (sentences)
+  "Return a signature with the sentence count."
+  (if (<= 2 sentences 5)
+      (let ((sentences-en
+	     (alist-get sentences
+			'((2 . "two")
+			  (3 . "three")
+			  (4 . "four")
+			  (5 . "five")))))
+	(format
+	 mbork/message-sentenc-es-template
+	 sentences-en
+	 sentences-en))
+    ""))
+
+(defun mbork/message-insert-sentenc-es-signature ()
+  "Insert a sentenc.es-based signature."
+  (interactive)
+  (mbork/message-insert-custom-signature
+   (mbork/message-sentenc-es-signature (mbork/message-count-sentences))))
+
+
 ;;; Identities
 
 (defcustom mbork/message-identity-list
@@ -248,29 +278,6 @@ and `mbork/message-closings' according to IDENTITY."
 						 (alist-get identity mbork/message-identity-list)))
   (setq mbork/message-closings (alist-get 'closings (alist-get
 							  identity mbork/message-identity-list))))
-
-;; TODO: remove code duplication!
-(defun mbork/message-sentenc-es-signature-pl (sentences)
-  "Return a signature (in Polish) with a sentence count, but only
-if there are no more than five sentences in the message."
-  (when (<= 2 sentences 5)
-    (format "- Dlaczego ta wiadomość jest tak krótka?
-- Bo szkoda naszego czasu na zbędne rzeczy.
-http://%s.sentenc.es" (alist-get sentences '((2 . "two")
-					     (3 . "three")
-					     (4 . "four")
-					     (5 . "five"))))))
-
-(defun mbork/message-sentenc-es-signature-en (sentences)
-  "Return a signature (in English) with a sentence count, but only
-if there are no more than five sentences in the message."
-  (when (<= 2 sentences 5)
-    (format "Q: Why is this message so short?
-A: Because our time is valuable.
-http://%s.sentenc.es" (alist-get sentences '((2 . "two")
-					     (3 . "three")
-					     (4 . "four")
-					     (5 . "five"))))))
 
 
 ;;; Blank lines
