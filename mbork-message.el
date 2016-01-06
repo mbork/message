@@ -269,14 +269,6 @@ and `mbork/message-closings' according to IDENTITY."
   (setq mbork/message-closings (alist-get 'closings (alist-get
 							  identity mbork/message-identity-list))))
 
-(defun mbork/message-prepare-message ()
-  "Ask the user for the salutation, closing and signature, and prepare
-the message for writing the contents."
-  (interactive)
-  (mbork/message-insert-salutation t)
-  (mbork/message-insert-closing)
-  (mbork/message-insert-signature-advice))
-
 ;; TODO: remove code duplication!
 (defun mbork/message-sentenc-es-signature-pl (sentences)
   "Return a signature (in Polish) with a sentence count, but only
@@ -528,6 +520,24 @@ newly-inserted closing."
 	(forward-line -1))
       (mbork/message-compress-blank-lines-here)
       (insert closing "\n\n"))))
+
+
+;;; Main entry point
+(defun mbork/message-prepare-message ()
+  "Prepare the message for sending.
+This means inserting a salutation, a closing and a signature,
+compressing the blank lines, and if we reply to a message, positioning
+the point after the first paragraph."
+  (interactive)
+  (call-interactively #'mbork/message-select-identity)
+  (mbork/message-insert-salutation)
+  (mbork/message-insert-closing)
+  (mbork/message-insert-signature)
+  (mbork/message-goto-body)
+  (mbork/message-compress-blank-lines)
+  (when (save-excursion
+	  (re-search-forward "^>+ " nil t))
+    (forward-paragraph 1)))
 
 
 ;;; That's all, folks
