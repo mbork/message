@@ -152,13 +152,7 @@ composing a new message."
 
 (defcustom mbork/message-signatures
   '()
-  "List of signature-generating functions.
-Each entry is either a string (the signature) or an Elisp form
-which returns the signature upon `eval'uation.  (A useful value
-is `(shell-command-to-string \"some shell command\")'.)  For
-simplicity, if this form consists of the name of a parameterless
-function, the parens may be omitted.  If a form (or function)
-returns nil, this entry is considered nonexistent.")
+  "List of signatures.")
 
 (defvar-local mbork/message-signature-number -1
   "The number of the current signature (counted from zero).")
