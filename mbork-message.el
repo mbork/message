@@ -99,7 +99,7 @@ resulting number if PRINT-MESSAGE is non-nil."
 	  sentences)))))
 
 
-;;; Signatures
+;;; Simple signatures
 
 (defun mbork/message-insert-custom-signature (signature)
   "Insert SIGNATURE at the bottom of the message."
