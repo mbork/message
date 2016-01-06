@@ -535,8 +535,7 @@ the point after the first paragraph."
   (mbork/message-insert-signature)
   (mbork/message-goto-body)
   (mbork/message-compress-blank-lines)
-  (when (save-excursion
-	  (re-search-forward "^>+ " nil t))
+  (when mu4e-compose-parent-message
     (forward-paragraph 1)))
 
 
