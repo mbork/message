@@ -154,20 +154,6 @@ composing a new message."
   '()
   "List of signatures.")
 
-(defvar-local mbork/message-signature-number -1
-  "The number of the current signature (counted from zero).")
-(put 'mbork/message-signature-number 'permanent-local t)
-
-(defun mbork/message-signature-cycle (&optional number)
-  "Return the next signature from the list, or the NUMBERth one
-if NUMBER is non-nil."
-  (interactive "P")
-  (if (numberp number)
-      (setq message-signature-number number)
-    (cl-incf message-signature-number)
-    (if (>= message-signature-number (length mbork/message-signatures))
-	(setq message-signature-number 0))))
-
 
 ;;; Identities
 
